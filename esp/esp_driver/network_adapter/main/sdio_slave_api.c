@@ -155,9 +155,9 @@ static int32_t sdio_write(interface_handle_t *handle, interface_buffer_handle_t 
 		return ESP_FAIL;
 	}
 
-	if (handle->state != ACTIVE) {
-		return ESP_FAIL;
-	}
+	// if (handle->state != ACTIVE) {
+	// 	return ESP_FAIL;
+	// }
 
 	if (!buf_handle->payload_len || !buf_handle->payload) {
 		ESP_LOGE(TAG , "Invalid arguments, len:%d", buf_handle->payload_len);
@@ -206,9 +206,9 @@ interface_buffer_handle_t * sdio_read(interface_handle_t *if_handle)
 		return NULL;
 	}
 
-	if (if_handle->state != ACTIVE) {
-		return NULL;
-	}
+	// if (if_handle->state != ACTIVE) {
+	// 	return NULL;
+	// }
 
 	buf_handle = malloc(sizeof(interface_buffer_handle_t));
 	if (!buf_handle) {
