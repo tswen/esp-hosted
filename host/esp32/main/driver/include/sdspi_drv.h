@@ -39,7 +39,7 @@ typedef enum sdspi_drv_events_s {
 /** Inline functions **/
 
 /** Exported Functions **/
-void esp_sdspi_init(void(*sdspi_drv_evt_handler)(uint8_t));
+esp_err_t esp_sdspi_init(void(*sdspi_drv_evt_handler)(uint8_t));
 
 esp_err_t send_to_slave(uint8_t iface_type, uint8_t iface_num,
 		uint8_t * wbuffer, uint16_t wlen);

@@ -25,8 +25,14 @@
 #include "serial_drv.h"
 #include "netdev_if.h"
 
+#define DIVER_SELECT  1
+#if DIVER_SELECT
 #include "sdspi_host.h"
 #include "port.h"
+#else
+#include "host_serial_bus.h"
+#include "host_config.h"
+#endif
 
 /** Constants/Macros **/
 #define TO_SLAVE_QUEUE_SIZE               10
@@ -41,11 +47,15 @@
 
 static const char *TAG = "sdio_drv";
 
+#if DIVER_SELECT
 static spi_context_t context;
 static uint8_t esp_at_sendbuf[READ_BUFFER_LEN] = "";
 static uint8_t esp_at_recvbuf[READ_BUFFER_LEN + 1] = "";
-
 static void sdspi_recv_task(void* pvParameters);
+#else
+static host_serial_bus_handle_t s_host_device_handle;
+static esp_err_t IRAM_ATTR recv_cb(host_serial_bus_handle_t device, host_recv_status_t recv_status, const void *buffer, size_t len);
+#endif
 
 static int esp_netdev_open(netdev_handle_t netdev);
 static int esp_netdev_close(netdev_handle_t netdev);
@@ -217,13 +227,22 @@ static void deinit_netdev(void)
   * @param  spi_drv_evt_handler - event handler of type spi_drv_events_e
   * @retval None
   */
-void esp_sdspi_init(void(*spi_drv_evt_handler)(uint8_t))
+esp_err_t esp_sdspi_init(void(*spi_drv_evt_handler)(uint8_t))
 {
 	esp_err_t retval = ESP_OK;
 
+#if DIVER_SELECT
     retval = at_sdspi_init();
     assert(retval == ESP_OK);
 	memset(&context, 0x0, sizeof(spi_context_t));
+#else
+	s_host_device_handle = host_serial_bus_open(DEVICE_SDIO);
+	if (s_host_device_handle == NULL) {
+		ESP_LOGE(TAG, "open device error");
+		return ESP_FAIL;
+	}
+	host_serial_bus_register_recv_callback(s_host_device_handle, recv_cb);
+#endif
 
 	/* register callback */
 	sdspi_drv_evt_handler_fp = spi_drv_evt_handler;
@@ -245,9 +264,13 @@ void esp_sdspi_init(void(*spi_drv_evt_handler)(uint8_t))
 	assert(from_slave_queue);
 
 	/* Task - RX processing */
+#if DIVER_SELECT
 	xTaskCreate(sdspi_recv_task, "sdspi_recv_task", 4 * 1024, NULL, 6, NULL);
+#endif
 	xTaskCreate(process_rx_task, "Process_RX_Task", PROCESS_RX_TASK_STACK_SIZE, NULL, 6, &Process_RX_Task_Handle);
 	configASSERT(Process_RX_Task_Handle);
+
+	return ESP_OK;
 }
 
 
@@ -260,13 +283,16 @@ static void check_and_execute_spi_transaction(uint16_t wlen)
 	txbuff = get_tx_buffer(&is_valid_tx_buf);
 	// ESP_LOG_BUFFER_HEXDUMP(TAG, txbuff, wlen + ESP_PAYLOAD_HEADER_SIZE, ESP_LOG_INFO);
 
+#if DIVER_SELECT
 	esp_err_t err = at_sdspi_send_packet(&context, txbuff, wlen + ESP_PAYLOAD_HEADER_SIZE, UINT32_MAX);
-
-	free(txbuff);
-	
 	if (err != ESP_OK) {
 		ESP_LOGE(TAG, "Send error, %d\n", err);
 	}
+#else
+	host_serial_bus_write(s_host_device_handle, txbuff, wlen + ESP_PAYLOAD_HEADER_SIZE);
+#endif
+
+	free(txbuff);
 }
 
 /**
@@ -314,6 +340,7 @@ esp_err_t send_to_slave(uint8_t iface_type, uint8_t iface_num,
 	return ESP_OK;
 }
 
+#if DIVER_SELECT
 static void sdspi_recv_task(void* pvParameters)
 {
     esp_err_t ret;
@@ -382,6 +409,38 @@ static void sdspi_recv_task(void* pvParameters)
         }
     }
 }
+#else
+static esp_err_t IRAM_ATTR recv_cb(host_serial_bus_handle_t device, host_recv_status_t recv_status, const void *buffer, size_t len)
+{
+    if (!buffer || !len) {
+        return ESP_FAIL;
+    }
+	ESP_LOGD(TAG, "Host recv len %d", len);
+
+	interface_buffer_handle_t buf_handle = {0};
+	struct  esp_payload_header *payload_header;
+	uint16_t payload_len, offset;
+
+	/* create buffer rx handle, used for processing */
+	payload_header = (struct esp_payload_header *) buffer;
+
+	/* Fetch length and offset from payload header */
+	payload_len = le16toh(payload_header->len);
+	offset = le16toh(payload_header->offset);
+
+	buf_handle.priv_buffer_handle = buffer;
+	buf_handle.free_buf_handle = free;
+	buf_handle.payload_len = payload_len;
+	buf_handle.if_type     = payload_header->if_type;
+	buf_handle.if_num      = payload_header->if_num;
+	buf_handle.payload     = buffer + offset;
+	
+	if (pdTRUE != xQueueSend(from_slave_queue,
+				&buf_handle, portMAX_DELAY)) {
+		printf("Failed to send buffer\n\r");
+	}
+}
+#endif
 
 /** Local functions **/
 
