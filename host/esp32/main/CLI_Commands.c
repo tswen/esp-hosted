@@ -135,7 +135,7 @@ static const CLI_Command_Definition_t xAPCommand =
 	"ap", /* The command string to type. */
 	"ap: configure ssid and password\r\n",
 	prvAPCommand, /* The function to run. */
-	0 /* The user can enter any number of commands. */
+	0 /* No parameters are expected. */
 };
 
 /* Structure that defines the "mode" command line command. */
@@ -180,7 +180,7 @@ static const CLI_Command_Definition_t xIperfCommand =
 	"iperf", /* The command string to type. */
 	"iperf: throughput test\r\n",
 	prvIperfCommand, /* The function to run. */
-	0 /* No parameters are expected. */
+	-1 /* The user can enter any number of commands.*/
 };
 
 /*-----------------------------------------------------------*/
@@ -209,6 +209,10 @@ void vRegisterCLICommands( void )
 
 static BaseType_t prvIperfCommand( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
+	char *pc1, *pc2;
+	BaseType_t xLength1, xLength2;
+	iperf_cfg_t cfg_iperf_test;
+
 	/* Remove compile time warnings about unused parameters, and check the
 	write buffer is not NULL.  NOTE - for simplicity, this example assumes the
 	write buffer length is adequate, so does not check for buffer overflows. */
@@ -216,21 +220,68 @@ static BaseType_t prvIperfCommand( char *pcWriteBuffer, size_t xWriteBufferLen, 
 	( void ) xWriteBufferLen;
 	configASSERT( pcWriteBuffer );
 	memset( pcWriteBuffer, 0x00, xWriteBufferLen );
+	memset( &cfg_iperf_test, 0, sizeof(cfg_iperf_test) );
 
 #ifdef CONFIG_HEAP_TRACING
 	heap_trace_start(HEAP_TRACE_LEAKS);
 #endif
 
-	esp_netif_get_ip_info(netif_sta, &ip);
+	pc2 = ( char * ) FreeRTOS_CLIGetParameter(pcCommandString, 2, &xLength2);
+	pc1 = ( char * ) FreeRTOS_CLIGetParameter(pcCommandString, 1, &xLength1);
 
-	iperf_cfg_t cfg_iperf_test;
-	memset(&cfg_iperf_test, 0, sizeof(cfg_iperf_test));
-	cfg_iperf_test.flag |= IPERF_FLAG_SERVER;
-	cfg_iperf_test.sip = ip.ip.addr;
-	cfg_iperf_test.sport = 8888;
-    cfg_iperf_test.dport = IPERF_DEFAULT_PORT;
-	cfg_iperf_test.interval = IPERF_DEFAULT_INTERVAL;
-	cfg_iperf_test.time = IPERF_DEFAULT_TIME;
+	if (pc1 == NULL) {
+		sprintf(pcWriteBuffer, "Invalid command\r\n");
+		return pdFALSE;
+	} else {
+		/* Sanity check something was returned. */
+		configASSERT( pc1 );
+		/* Terminate the string. */
+		pc1[ xLength1 ] = 0x00;
+
+		esp_netif_get_ip_info(netif_sta, &ip);
+
+		/* iperf -a */
+		if(strncmp(pc1, "-a", strlen("-a")) == 0) {
+			printf("iperf stop\r\n");
+			iperf_stop();
+			return pdFALSE;
+		}
+		/* iperf -s */
+		else if(strncmp(pc1, "-s", strlen("-s")) == 0) {
+			cfg_iperf_test.flag |= IPERF_FLAG_SERVER;
+			cfg_iperf_test.sip = ip.ip.addr;
+			cfg_iperf_test.sport = IPERF_DEFAULT_PORT;
+			cfg_iperf_test.dport = IPERF_DEFAULT_PORT;
+			cfg_iperf_test.interval = IPERF_DEFAULT_INTERVAL;
+			cfg_iperf_test.time = IPERF_DEFAULT_TIME;
+		}
+		/* iperf -c */
+		else if(strncmp(pc1, "-c", strlen("-c")) == 0) {
+			if (pc2 == NULL) {
+				sprintf(pcWriteBuffer, "Missing destination IP address\r\n");
+				return pdFALSE;
+			} else {
+				cfg_iperf_test.dip = esp_ip4addr_aton(pc2);
+				cfg_iperf_test.flag |= IPERF_FLAG_CLIENT;
+				cfg_iperf_test.sip = ip.ip.addr;
+				cfg_iperf_test.flag |= IPERF_FLAG_TCP;
+				cfg_iperf_test.sport = IPERF_DEFAULT_PORT;
+				cfg_iperf_test.dport = IPERF_DEFAULT_PORT;
+				cfg_iperf_test.interval = IPERF_DEFAULT_INTERVAL;
+				cfg_iperf_test.time = IPERF_DEFAULT_TIME;
+			}
+		} else {
+			sprintf(pcWriteBuffer, "Invalid command\r\n");
+			return pdFALSE;
+		}
+	}
+
+	printf("mode=%s-%s sip=%d.%d.%d.%d:%d, dip=%d.%d.%d.%d:%d, interval=%d, time=%d\r\n",
+			cfg_iperf_test.flag & IPERF_FLAG_TCP ? "tcp" : "udp",
+			cfg_iperf_test.flag & IPERF_FLAG_SERVER ? "server" : "client",
+			cfg_iperf_test.sip & 0xFF, (cfg_iperf_test.sip >> 8) & 0xFF, (cfg_iperf_test.sip >> 16) & 0xFF, (cfg_iperf_test.sip >> 24) & 0xFF, cfg_iperf_test.sport,
+			cfg_iperf_test.dip & 0xFF, (cfg_iperf_test.dip >> 8) & 0xFF, (cfg_iperf_test.dip >> 16) & 0xFF, (cfg_iperf_test.dip >> 24) & 0xFF, cfg_iperf_test.dport,
+			cfg_iperf_test.interval, cfg_iperf_test.time);
 	iperf_start(&cfg_iperf_test);
 
 	/* There is no more data to return after this single string, so return pdFALSE. */
