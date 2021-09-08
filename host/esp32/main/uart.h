@@ -14,10 +14,22 @@
  *      limitations under the License.
  */
 
+#ifndef __UART_H
+#define __UART_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 
-#define ENABLE_FLUSH  1
-#define DISABLE_FLUSH 0
+#define UART_NUM                (CONFIG_UART_PORT_NUM)
 
-void esp_data_back(void* data_buf, size_t lenth, bool flush);
+void initialise_uart(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

@@ -18,6 +18,7 @@
 #include "nvs_flash.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "driver/gpio.h"
 
 #include "esp_log.h"
 #include "esp_err.h"
@@ -29,8 +30,7 @@
 #include "netdev_if.h"
 #include "netdev_api.h"
 #include "esp_host_pkt.h"
-
-#include "driver/gpio.h"
+#include "uart.h"
 
 #ifdef CONFIG_HEAP_TRACING
 #include "esp_heap_trace.h"
@@ -47,8 +47,6 @@ esp_netif_t *netif_sta;
  * The commands are defined in CLI-commands.c.
  */
 void vRegisterCLICommands(void);
-
-void initialise_uart(void);
 
 /**
   * @brief  Control path event handler callback

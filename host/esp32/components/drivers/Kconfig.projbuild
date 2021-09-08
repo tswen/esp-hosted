@@ -2,14 +2,16 @@ menu "Driver platform Configuration"
 
 choice TRANSMIT_PERIPHERAL
     prompt "Transmit peripheral"
-    default TRANSMIT_USE_SPI
+    default TRANSMIT_USE_SDSPI
     help
-        Select transmit peripheral(SDIO or SPI)
+        Select transmit peripheral(SDIO or SPI or SDSPI)
 
 config TRANSMIT_USE_SPI
     bool "Using SPI"
 config TRANSMIT_USE_SDIO
     bool "Using SDIO(Only for ESP32)"
+config TRANSMIT_USE_SDSPI
+    bool "Using SDSPI(Only for ESP32)"
 endchoice
 
 choice TARGET_PLATFORM

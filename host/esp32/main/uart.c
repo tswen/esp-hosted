@@ -22,6 +22,8 @@
 #include "driver/uart.h"
 #include "esp_log.h"
 
+#include "uart.h"
+
 static const char *TAG = "UART";
 
 /**
@@ -38,7 +40,6 @@ static const char *TAG = "UART";
 #define UART_RTS (UART_PIN_NO_CHANGE)
 #define UART_CTS (UART_PIN_NO_CHANGE)
 
-#define UART_NUM                (CONFIG_UART_PORT_NUM)
 #define UART_BAUD_RATE          (CONFIG_UART_BAUD_RATE)
 #define UART_TASK_STACK_SIZE    (CONFIG_TASK_STACK_SIZE)
 

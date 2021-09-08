@@ -7,54 +7,35 @@ list(APPEND srcs
     )
 
 # host common
-list(APPEND srcs
-    "../../host_common/commands.c"
-    "../../host_common/transport_pserial.c"
-    )
+ list(APPEND srcs
+     "../../host_common/commands.c"
+     "../../host_common/transport_pserial.c"
+     )
 
 # other
 list(APPEND srcs
     "dongle_main.c"
     "CLI_Commands.c"
-    "platform_wrapper.c"
+    "Command_Parse.c"
+    "uart.c"
     )
 
 list(APPEND srcs
-    "host_control/control.c"
-    )
-
-list(APPEND srcs
-    "other/Command_Parse.c"
-    "other/data_back.c"
-    "other/uart.c"
-    )
-
-list(APPEND srcs
-    "common/common.c"
-    "common/util.c"
-    )
-
-list(APPEND srcs
-    "driver/net/netdev_api.c"
-    "driver/net/netdev_stub.c"
-    "driver/serial/serial_if.c"
-    "driver/sdspi_driver/sdspi_drv.c"
-    )
-
-list(APPEND srcs
-    "host_wifi/src/host_wifi_default.c"
-    "host_wifi/src/host_wifi_netif.c"
-    "host_wifi/src/esp_host_pkt.c"
+    "host_driver/platform_wrapper.c"
+    "host_driver/net/netdev_api.c"
+    "host_driver/net/netdev_stub.c"
+    "host_driver/serial/serial_if.c"
+    "host_driver/sdspi_driver/sdspi_drv.c"
+    "host_driver/wifi/src/host_wifi_default.c"
+    "host_driver/wifi/src/host_wifi_netif.c"
+    "host_driver/wifi/src/esp_host_pkt.c"
     )
 
 list(APPEND icls
     "../../../common/include"
     "../../host_common/include"
-    "host_control/include"
-    "other/include"
-    "common/include"
-    "driver/include"
-    "host_wifi/include"
+    "host_driver/include"
+    "host_driver/wifi/include"
     )
 
 idf_component_register(SRCS ${srcs}
