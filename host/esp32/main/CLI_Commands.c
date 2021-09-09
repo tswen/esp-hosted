@@ -117,7 +117,7 @@ static const CLI_Command_Definition_t xStationCommand =
 	"sta", /* The command string to type. */
 	"sta: join specified soft-AP\r\n",
 	prvStationCommand, /* The function to run. */
-	0 /* The user can enter any number of commands. */
+	-1 /* The user can enter any number of commands. */
 };
 
 /* Structure that defines the "scan" command line command. */
@@ -336,6 +336,9 @@ static BaseType_t prvTaskStatusCommand( char *pcWriteBuffer, size_t xWriteBuffer
 
 static BaseType_t prvStationCommand( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
+	char *pc1, *pc2, *pc3, *pc4, *pc5, *pc6;
+	BaseType_t xLength1, xLength2, xLength3, xLength4, xLength5, xLength6;
+
 	/* Remove compile time warnings about unused parameters, and check the
 	write buffer is not NULL.  NOTE - for simplicity, this example assumes the
 	write buffer length is adequate, so does not check for buffer overflows. */
@@ -344,8 +347,137 @@ static BaseType_t prvStationCommand( char *pcWriteBuffer, size_t xWriteBufferLen
 	configASSERT( pcWriteBuffer );
 	memset( pcWriteBuffer, 0x00, xWriteBufferLen );
 
-	station_connect();
-	get_application_mode();
+	/* Obtain the sixth parameter */
+	pc6 = ( char * ) FreeRTOS_CLIGetParameter
+								(
+									pcCommandString,    /* The command string itself. */
+									6,                  /* Return the Sixth parameter. */
+									&xLength6           /* Store the parameter string length. */
+								);
+
+	/* Obtain the fifth parameter */
+	pc5 = ( char * ) FreeRTOS_CLIGetParameter
+								(
+									pcCommandString,    /* The command string itself. */
+									5,                  /* Return the fifth parameter. */
+									&xLength5           /* Store the parameter string length. */
+								);
+
+	/* Obtain the fourth parameter */
+	pc4 = ( char * ) FreeRTOS_CLIGetParameter
+								(
+									pcCommandString,    /* The command string itself. */
+									4,                  /* Return the fourth parameter. */
+									&xLength4           /* Store the parameter string length. */
+								);
+
+	/* Obtain the third parameter. */
+	pc3 = ( char * ) FreeRTOS_CLIGetParameter
+								(
+									pcCommandString,    /* The command string itself. */
+									3,                  /* Return the third parameter. */
+									&xLength3           /* Store the parameter string length. */
+								);
+
+	/* Obtain the second parameter */
+	pc2 = ( char * ) FreeRTOS_CLIGetParameter
+								(
+									pcCommandString,    /* The command string itself. */
+									2,                  /* Return the second parameter. */
+									&xLength2           /* Store the parameter string length. */
+								);
+
+	/* Obtain the first parameter. */
+	pc1 = ( char * ) FreeRTOS_CLIGetParameter
+								(
+									pcCommandString,    /* The command string itself. */
+									1,                  /* Return the first parameter. */
+									&xLength1           /* Store the parameter string length. */
+								);
+
+	if (pc1 == NULL) {
+		get_application_mode();
+		return pdFALSE;
+	} else {
+		/* Sanity check something was returned. */
+		configASSERT( pc1 );
+		/* Terminate the string. */
+		pc1[ xLength1 ] = 0x00;
+
+		if(strncmp(pc1, "-d", strlen("-d")) == 0) {
+			// if (wif_cmd_disconnect_wifi() == ESP_OK) {
+			// 	sprintf(pcWriteBuffer, "OK\r\n");
+			// } else {
+			// 	sprintf(pcWriteBuffer, "FAIL\r\n");
+			// }
+			return pdFALSE;
+		} else if(strncmp(pc1, "-s", strlen("-s")) != 0) {
+			sprintf(pcWriteBuffer, "Invalid parameter\r\n");
+			return pdFALSE;
+		}
+	}
+
+	if (pc2 == NULL) {
+		sprintf(pcWriteBuffer, "Invalid parameter\r\n");
+		return pdFALSE;
+	} else {
+		if (pc3 == NULL) {
+			station_connect(pc2, null_password);
+			printf("the ssid is %s.\r\n", pc2);
+			printf("the ssid len is %d.\r\n", xLength2);
+			return pdFALSE;
+		}
+	}
+
+	if (pc4 == NULL) {
+		station_connect(pc2, null_password);
+		printf("the ssid is %s.\r\n", pc2);
+		printf("the ssid len is %d.\r\n", (xLength2 + xLength3 + 1));
+		return pdFALSE;
+	}
+
+	if (pc5 == NULL) {
+		/* Terminate the string. */
+		pc2[ xLength2 ] = 0x00;
+
+		if(strncmp(pc3, "-p", strlen("-p")) != 0) {
+			sprintf(pcWriteBuffer, "Invalid parameter\r\n");
+			return pdFALSE;
+		}
+		/* Terminate the string. */
+		pc3[ xLength3 ] = 0x00;
+		station_connect(pc2, pc4);
+		printf("the ssid is %s, the password is %s.\r\n", pc2, pc4);
+		printf("the ssid len is %d, the password len is %d.\r\n", xLength2, xLength4);
+		return pdFALSE;
+	}
+
+	if (pc6 == NULL) {
+		if(strncmp(pc3, "-p", strlen("-p")) == 0) {    
+			if(strncmp(pc4, "-p", strlen("-p")) != 0) {
+				/* Terminate the string. */
+				pc2[ xLength2 ] = 0x00;
+				pc3[ xLength3 ] = 0x00;
+				station_connect(pc2, pc4);
+				printf("the ssid is %s, the password is %s.\r\n", pc2, pc4);
+				printf("the ssid len is %d, the password len is %d.\r\n", xLength2, (xLength4 + xLength5 + 1));
+				return pdFALSE;
+			}
+		}
+		/* Terminate the string. */
+		pc3[ xLength3 ] = 0x00;
+		pc4[ xLength4 ] = 0x00;
+		station_connect(pc2, pc5);
+		printf("the ssid is %s, the password is %s.\r\n", pc2, pc5);
+		printf("the ssid len is %d, the password len is %d.\r\n", (xLength2 + xLength3 + 1), xLength5);
+	} else {
+		/* Terminate the string. */
+		pc3[ xLength3 ] = 0x00;
+		pc4[ xLength4 ] = 0x00;
+		station_connect(pc2, pc5);
+		printf("the ssid is %s, the password is %s.\r\n", pc2, pc5);
+		printf("the ssid len is %d, the password len is %d.\r\n", (xLength2 + xLength3 + 1), (xLength5 + xLength6 + 1));
+	}
 
 	return pdFALSE;
 }

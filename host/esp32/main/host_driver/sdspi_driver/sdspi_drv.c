@@ -263,7 +263,7 @@ esp_err_t esp_sdspi_init(void(*spi_drv_evt_handler)(uint8_t))
 	assert(from_slave_queue);
 
 	/* Task - RX processing */
-#if DIVER_SELECT
+#ifdef CONFIG_TRANSMIT_USE_SDSPI
 	xTaskCreate(sdspi_recv_task, "sdspi_recv_task", 4 * 1024, NULL, 6, NULL);
 #endif
 	xTaskCreate(process_rx_task, "Process_RX_Task", PROCESS_RX_TASK_STACK_SIZE, NULL, 6, &Process_RX_Task_Handle);

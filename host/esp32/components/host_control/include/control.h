@@ -134,7 +134,7 @@ typedef enum control_path_events_s {
 
 /** Exported Functions **/
 int get_ap_scan_list(void);
-int station_connect(void);
+int station_connect(char* input_ssid, char* input_password);
 int softap_start(void);
 int get_application_mode(void);
 

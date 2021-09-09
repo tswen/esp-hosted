@@ -313,7 +313,7 @@ static void print_configuration_parameters(void)
   * @param  None
   * @retval ESP_OK/ESP_FAIL
   */
-int station_connect(void)
+int station_connect(char* input_ssid, char* input_password)
 {
 	/* station mode */
 	int wifi_mode = WIFI_MODE_STA;
@@ -322,12 +322,12 @@ int station_connect(void)
 	esp_hosted_control_config_t ap_config = {0};
 
 	printf("Station mode: ssid: %s passwd %s \n\r",
-			INPUT_STATION__SSID, INPUT_STATION_PASSWORD);
+			input_ssid, input_password);
 
-	strncpy((char* )&ap_config.station.ssid,    INPUT_STATION__SSID,
-			min(SSID_LENGTH,     strlen(INPUT_STATION__SSID)+1));
-	strncpy((char* )&ap_config.station.pwd,     INPUT_STATION_PASSWORD,
-			min(PASSWORD_LENGTH, strlen(INPUT_STATION_PASSWORD)+1));
+	strncpy((char* )&ap_config.station.ssid,    input_ssid,
+			min(SSID_LENGTH,     strlen(input_ssid)+1));
+	strncpy((char* )&ap_config.station.pwd,     input_password,
+			min(PASSWORD_LENGTH, strlen(input_password)+1));
 	if (strlen(INPUT_STATION_BSSID)) {
 		strncpy((char* )&ap_config.station.bssid,   INPUT_STATION_BSSID,
 			min(BSSID_LENGTH,    strlen(INPUT_STATION_BSSID)+1));
