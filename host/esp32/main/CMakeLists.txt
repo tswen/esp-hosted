@@ -7,7 +7,7 @@ list(APPEND srcs
     )
 
 # host common
- list(APPEND srcs
+list(APPEND srcs
      "../../host_common/commands.c"
      "../../host_common/transport_pserial.c"
      )

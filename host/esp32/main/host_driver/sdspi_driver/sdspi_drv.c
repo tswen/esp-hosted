@@ -25,8 +25,7 @@
 #include "serial_drv.h"
 #include "netdev_if.h"
 
-#define DIVER_SELECT  1
-#if DIVER_SELECT
+#ifdef CONFIG_TRANSMIT_USE_SDSPI
 #include "sdspi_host.h"
 #include "port.h"
 #else
@@ -47,7 +46,7 @@
 
 static const char *TAG = "sdio_drv";
 
-#if DIVER_SELECT
+#ifdef CONFIG_TRANSMIT_USE_SDSPI
 static spi_context_t context;
 static uint8_t esp_at_sendbuf[READ_BUFFER_LEN] = "";
 static uint8_t esp_at_recvbuf[READ_BUFFER_LEN + 1] = "";
@@ -231,7 +230,7 @@ esp_err_t esp_sdspi_init(void(*spi_drv_evt_handler)(uint8_t))
 {
 	esp_err_t retval = ESP_OK;
 
-#if DIVER_SELECT
+#ifdef CONFIG_TRANSMIT_USE_SDSPI
     retval = at_sdspi_init();
     assert(retval == ESP_OK);
 	memset(&context, 0x0, sizeof(spi_context_t));
@@ -283,7 +282,7 @@ static void check_and_execute_spi_transaction(uint16_t wlen)
 	txbuff = get_tx_buffer(&is_valid_tx_buf);
 	// ESP_LOG_BUFFER_HEXDUMP(TAG, txbuff, wlen + ESP_PAYLOAD_HEADER_SIZE, ESP_LOG_INFO);
 
-#if DIVER_SELECT
+#ifdef CONFIG_TRANSMIT_USE_SDSPI
 	esp_err_t err = at_sdspi_send_packet(&context, txbuff, wlen + ESP_PAYLOAD_HEADER_SIZE, UINT32_MAX);
 	if (err != ESP_OK) {
 		ESP_LOGE(TAG, "Send error, %d\n", err);
@@ -340,7 +339,7 @@ esp_err_t send_to_slave(uint8_t iface_type, uint8_t iface_num,
 	return ESP_OK;
 }
 
-#if DIVER_SELECT
+#ifdef CONFIG_TRANSMIT_USE_SDSPI
 static void sdspi_recv_task(void* pvParameters)
 {
     esp_err_t ret;
