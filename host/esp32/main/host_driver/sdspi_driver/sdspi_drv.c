@@ -29,6 +29,7 @@
 #include "sdspi_host.h"
 #include "port.h"
 #else
+#include "sdio_host_transport.h"
 #include "host_serial_bus.h"
 #include "host_config.h"
 #endif
@@ -234,12 +235,14 @@ esp_err_t esp_sdspi_init(void(*spi_drv_evt_handler)(uint8_t))
     retval = at_sdspi_init();
     assert(retval == ESP_OK);
 	memset(&context, 0x0, sizeof(spi_context_t));
+	at_sdspi_send_intr(0);
 #else
 	s_host_device_handle = host_serial_bus_open(DEVICE_SDIO);
 	if (s_host_device_handle == NULL) {
 		ESP_LOGE(TAG, "open device error");
 		return ESP_FAIL;
 	}
+	sdio_host_send_intr(0);
 	host_serial_bus_register_recv_callback(s_host_device_handle, recv_cb);
 #endif
 
