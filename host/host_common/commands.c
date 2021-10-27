@@ -25,6 +25,7 @@
 #define MAX_BSSID_LENGTH        17
 #define STATUS_LENGTH           14
 #define TIMEOUT_PSERIAL_RESP    30
+#define TIMEOUT_PSERIAL_RESP_HB 5
 #define MIN_CHNL_NO             1
 #define MAX_CHNL_NO             11
 #define MIN_CONN_NO             1
@@ -1316,5 +1317,77 @@ err1:
     mem_free(rx_data);
 err2:
     mem_free(tx_data);
+    return FAILURE;
+}
+
+// Function sends Heartbeat request
+int esp_hb(uint32_t hb_num, uint32_t *resp_hb_num)
+{
+    EspHostedConfigPayload req, *resp = NULL;
+    uint32_t tx_len = 0, rx_len = 0;
+    uint8_t *tx_data = NULL, *rx_data = NULL;
+
+    if (! resp_hb_num) {
+      command_log("resp_hb_num is NULL, failure\n");
+      return FAILURE;
+    }
+    *resp_hb_num = 0;
+
+    esp_hosted_config_payload__init (&req);
+    req.has_msg = true;
+    req.msg = ESP_HOSTED_CONFIG_MSG_TYPE__TypeCmdHB;
+
+    req.payload_case = ESP_HOSTED_CONFIG_PAYLOAD__PAYLOAD_CMD_HB;
+
+    EspHostedCmdHB *req_payload = (EspHostedCmdHB *)
+        esp_hosted_calloc(1, sizeof(EspHostedCmdHB));
+    if (!req_payload) {
+        command_log("Failed to allocate memory for req_payload\n");
+        return FAILURE;
+    }
+    esp_hosted_cmd_hb__init(req_payload);
+    req_payload->has_req = true;
+    req_payload->req = hb_num;
+    req.cmd_hb = req_payload;
+    tx_len = esp_hosted_config_payload__get_packed_size(&req);
+    if (!tx_len) {
+        command_log("Invalid tx length\n");
+        goto err3;
+    }
+
+    tx_data = (uint8_t *)esp_hosted_calloc(1, tx_len);
+    if (!tx_data) {
+        command_log("Failed to allocate memory for tx_data\n");
+        goto err3;
+    }
+
+    esp_hosted_config_payload__pack(&req, tx_data);
+
+    rx_data = transport_pserial_data_handler(tx_data, tx_len,
+            TIMEOUT_PSERIAL_RESP_HB, &rx_len);
+    if (!rx_data || !rx_len) {
+        command_log("Failed to process rx_data\n");
+        goto err2;
+    }
+
+    resp = esp_hosted_config_payload__unpack(NULL, rx_len, rx_data);
+    if ((!resp) || (!resp->resp_hb)) {
+        command_log("Failed to unpack rx_data\n");
+        goto err1;
+    }
+
+    *resp_hb_num = resp->resp_hb->resp;
+
+    mem_free(tx_data);
+    mem_free(rx_data);
+    mem_free(req_payload);
+    return SUCCESS;
+
+err1:
+    mem_free(rx_data);
+err2:
+    mem_free(tx_data);
+err3:
+    mem_free(req_payload);
     return FAILURE;
 }

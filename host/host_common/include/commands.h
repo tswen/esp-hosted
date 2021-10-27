@@ -291,4 +291,10 @@ int esp_ota_write(uint8_t* ota_data, uint32_t ota_data_len);
  */
 int esp_ota_end();
 
+/*
+ * It sends hearbeat request with hearbeat number to ESP32
+ * Waits for response and make response available to caller
+ * returns SUCCESS(0) or FAILURE(-1)
+ */
+int esp_hb(uint32_t hb_num, uint32_t *resp_hb_num);
 #endif

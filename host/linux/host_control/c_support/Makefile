@@ -27,5 +27,8 @@ test:
 stress:
 	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(INCLUDE) $(SRC) $(@).c -o $(@).out
 
+heartbeat:
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(INCLUDE) $(SRC) $(@).c -o $(@).out -lpigpio -lrt -lpthread
+
 clean:
 	rm -f *.out *.o

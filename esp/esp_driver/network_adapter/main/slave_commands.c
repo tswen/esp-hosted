@@ -1543,6 +1543,38 @@ err:
     return ESP_OK;
 }
 
+// Function for handling Hearbeat msgs
+static esp_err_t cmd_hb_handler (EspHostedConfigPayload *req,
+                                EspHostedConfigPayload *resp, void *priv_data)
+{
+    static uint32_t exp_tx_trans = 0;
+    EspHostedRespHB *resp_payload = NULL;
+
+    if (!req || !resp) {
+        ESP_LOGE(TAG, "Invalid parameters");
+        return ESP_FAIL;
+    }
+
+    resp_payload = (EspHostedRespHB *)calloc(1,sizeof(EspHostedRespHB));
+    if (!resp_payload) {
+        ESP_LOGE(TAG,"Failed to allocate memory");
+        return ESP_ERR_NO_MEM;
+    }
+    esp_hosted_resp_hb__init(resp_payload);
+    resp->payload_case = ESP_HOSTED_CONFIG_PAYLOAD__PAYLOAD_RESP_HB;
+    resp->resp_hb = resp_payload;
+    resp->resp_hb->has_resp = true;
+    resp_payload->resp = exp_tx_trans;
+
+    if(req->cmd_hb->req != exp_tx_trans)
+        exp_tx_trans = req->cmd_hb->req;
+    //printf("Received HB req of %u\n",req->cmd_hb->req);
+
+    exp_tx_trans++;
+
+    return ESP_OK;
+}
+
 static esp_hosted_config_cmd_t cmd_table[] = {
     {
         .cmd_num = ESP_HOSTED_CONFIG_MSG_TYPE__TypeCmdGetMACAddress ,
@@ -1611,6 +1643,10 @@ static esp_hosted_config_cmd_t cmd_table[] = {
     {
         .cmd_num = ESP_HOSTED_CONFIG_MSG_TYPE__TypeCmdOTAEnd,
         .command_handler = cmd_ota_end_handler
+    },
+    {
+        .cmd_num = ESP_HOSTED_CONFIG_MSG_TYPE__TypeCmdHB,
+        .command_handler = cmd_hb_handler
     },
 };
 
@@ -1759,6 +1795,10 @@ static void esp_hosted_config_cleanup(EspHostedConfigPayload *resp)
         }
         case (ESP_HOSTED_CONFIG_MSG_TYPE__TypeRespOTAEnd) : {
             mem_free(resp->resp_ota_end);
+            break;
+        }
+        case (ESP_HOSTED_CONFIG_MSG_TYPE__TypeRespHB) : {
+            mem_free(resp->resp_hb);
             break;
         }
         default:

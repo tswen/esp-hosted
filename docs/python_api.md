@@ -274,3 +274,20 @@ RSSI signal strength
 - "failure" string
 
 ---
+## 15 `esp_hb`
+Sends hearbeat request with a sequential hearbeat number to ESP32                                                                 │~
+It receives the heartbeat response number, a sequential number maintained at ESP32
+
+#### Parameters
+- `hb_num` :
+current heartbeat number, a sequential number requested
+- `resp_hb_num` :
+Heartbeat response from ESP, a sequential number maintained at ESP32
+
+#### Return
+- -1 : FAILURE
+- `resp_hb_num` :
+Heartbeat response number received from ESP32
+
+
+---

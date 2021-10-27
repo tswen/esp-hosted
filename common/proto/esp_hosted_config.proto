@@ -164,6 +164,14 @@ message EspHostedRespOTAEnd {
     int32 resp = 1;
 }
 
+message EspHostedCmdHB {
+    uint32 req = 1;
+}
+
+message EspHostedRespHB {
+    uint32 resp = 1;
+}
+
 enum EspHostedConfigMsgType {
     TypeCmdGetMACAddress = 0;
     TypeRespGetMACAddress = 1;
@@ -199,6 +207,8 @@ enum EspHostedConfigMsgType {
     TypeRespOTAWrite = 31;
     TypeCmdOTAEnd = 32;
     TypeRespOTAEnd = 33;
+    TypeCmdHB = 34;
+    TypeRespHB = 35;
 }
 
 message EspHostedConfigPayload {
@@ -238,5 +248,7 @@ message EspHostedConfigPayload {
         EspHostedRespOTAWrite resp_ota_write = 41;
         EspHostedCmdOTAEnd cmd_ota_end = 42;
         EspHostedRespOTAEnd resp_ota_end = 43;
+        EspHostedCmdHB cmd_hb = 44;
+        EspHostedRespHB resp_hb = 45;
     }
 }

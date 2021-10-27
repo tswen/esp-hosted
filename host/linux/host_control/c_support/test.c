@@ -32,11 +32,11 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    if (!argc) {
-        printf("Usage: %s [%s] [%s] [%s] [%s] [%s] [%s]\n", argv[0],
+    if (argc == 1) {
+        printf("Usage: %s [%s] [%s] [%s] [%s] [%s] [%s] [%s]\n", argv[0],
         STA_CONNECT, STA_DISCONNECT, AP_START, AP_STOP,
-        SCAN, STA_LIST);
-		return -1;
+        SCAN, STA_LIST, OTA);
+        return -1;
     }
 
     for (int i=1; i<argc; i++) {
@@ -58,8 +58,8 @@ int main(int argc, char *argv[])
                  (0 == strncasecmp("-h", argv[i], sizeof("-h")))) {
             printf("Usage: %s [%s] [%s] [%s] [%s] [%s] [%s]\n", argv[0],
                 STA_CONNECT, STA_DISCONNECT, AP_START, AP_STOP, SCAN, STA_LIST);
-			return(0);
-		}
+            return(0);
+        }
     }
 
     return 0;

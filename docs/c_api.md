@@ -420,6 +420,22 @@ User should free `esp_hosted_wifi_connected_stations_list` handler after use.
 
 ---
 
+### 2.15 `int esp_hb(uint32_t hb_num, uint32_t *resp_hb_num)`
+This is used to sends hearbeat request with hearbeat number to ESP32                                                                 │~
+It Waits for response and make response available to caller
+
+#### Parameters
+- `hb_num` :
+current heartbeat number, a sequential number requested
+- `resp_hb_num` :
+Heartbeat response from ESP, a sequential number maintained at ESP32
+
+#### Return
+- 0 : SUCCESS
+- -1 : FAILURE
+
+---
+
 ## 3. Enumerations
 
 ### 3.1 _enum_ `wifi_mode_t`

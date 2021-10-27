@@ -441,3 +441,14 @@ def esp_ota_end():
         return success
     else:
         return failure
+
+# Heartbeat
+# esp hb function trasmits heartbeat request and sends received response to caller
+
+def esp_hb(hb_num):
+    resp_hb_num = c_uint()
+    ret = commands_map_py_to_c.esp_hb(hb_num, byref(resp_hb_num))
+    if not ret:
+        return resp_hb_num.value
+    else:
+        return failure

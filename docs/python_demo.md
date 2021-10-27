@@ -37,3 +37,21 @@ Please execute `stress.py` as below.
 ex.
 sudo python stress.py
 ```
+
+# Heartbeat Application
+
+[heartbeat.py](../host/linux/host_control/python_support/heartbeat.py) used for monitoring liveliness of ESP32. It sends a sequential number as heartbeat and expects a heartbeat reponse within `TIMEOUT_PSERIAL_RESP_HB` time. ESP32 maintains own sequential number in reference to the heartbeat requests received. In case the ESP32 is rebooted, it starts sequence number of `0`. This is used to understand if ESP32 is silently rebooted. Heartbeat is sent in loop after every `ESP_HB_INTERVAL_SEC` interval. In case heartbeat is missed, this interval is reduced to `ESP_HB_RETRY_INTERVAL_SEC` and retried for `HB_MAX_RETRY` times. In case the heartbeats response not received after all retries, this application assumes that ESP32 is stuck in processing and resets ESP32 using `EN` or `RST` physical pin
+
+## Parameters
+- `resetpin`:
+This is optional parameter and defaults to `6` in Raspberry Pi case. This pin number when passed, the application will use that to reset ESP32.
+
+To execute this process,
+```
+python3 ./heartbeat.py --resetpin=6
+```
+or
+
+```
+python3 ./heartbeat.py
+```

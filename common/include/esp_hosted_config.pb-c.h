@@ -45,6 +45,8 @@ typedef struct _EspHostedCmdOTAWrite EspHostedCmdOTAWrite;
 typedef struct _EspHostedRespOTAWrite EspHostedRespOTAWrite;
 typedef struct _EspHostedCmdOTAEnd EspHostedCmdOTAEnd;
 typedef struct _EspHostedRespOTAEnd EspHostedRespOTAEnd;
+typedef struct _EspHostedCmdHB EspHostedCmdHB;
+typedef struct _EspHostedRespHB EspHostedRespHB;
 typedef struct _EspHostedConfigPayload EspHostedConfigPayload;
 
 
@@ -102,7 +104,9 @@ typedef enum _EspHostedConfigMsgType {
   ESP_HOSTED_CONFIG_MSG_TYPE__TypeCmdOTAWrite = 30,
   ESP_HOSTED_CONFIG_MSG_TYPE__TypeRespOTAWrite = 31,
   ESP_HOSTED_CONFIG_MSG_TYPE__TypeCmdOTAEnd = 32,
-  ESP_HOSTED_CONFIG_MSG_TYPE__TypeRespOTAEnd = 33
+  ESP_HOSTED_CONFIG_MSG_TYPE__TypeRespOTAEnd = 33,
+  ESP_HOSTED_CONFIG_MSG_TYPE__TypeCmdHB = 34,
+  ESP_HOSTED_CONFIG_MSG_TYPE__TypeRespHB = 35
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(ESP_HOSTED_CONFIG_MSG_TYPE)
 } EspHostedConfigMsgType;
 
@@ -485,6 +489,28 @@ struct  _EspHostedRespOTAEnd
     , 0,0 }
 
 
+struct  _EspHostedCmdHB
+{
+  ProtobufCMessage base;
+  protobuf_c_boolean has_req;
+  uint32_t req;
+};
+#define ESP_HOSTED_CMD_HB__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&esp_hosted_cmd_hb__descriptor) \
+    , 0,0 }
+
+
+struct  _EspHostedRespHB
+{
+  ProtobufCMessage base;
+  protobuf_c_boolean has_resp;
+  uint32_t resp;
+};
+#define ESP_HOSTED_RESP_HB__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&esp_hosted_resp_hb__descriptor) \
+    , 0,0 }
+
+
 typedef enum {
   ESP_HOSTED_CONFIG_PAYLOAD__PAYLOAD__NOT_SET = 0,
   ESP_HOSTED_CONFIG_PAYLOAD__PAYLOAD_CMD_GET_MAC_ADDRESS = 10,
@@ -521,6 +547,8 @@ typedef enum {
   ESP_HOSTED_CONFIG_PAYLOAD__PAYLOAD_RESP_OTA_WRITE = 41,
   ESP_HOSTED_CONFIG_PAYLOAD__PAYLOAD_CMD_OTA_END = 42,
   ESP_HOSTED_CONFIG_PAYLOAD__PAYLOAD_RESP_OTA_END = 43,
+  ESP_HOSTED_CONFIG_PAYLOAD__PAYLOAD_CMD_HB = 44,
+  ESP_HOSTED_CONFIG_PAYLOAD__PAYLOAD_RESP_HB = 45,
 } EspHostedConfigPayload__PayloadCase;
 
 struct  _EspHostedConfigPayload
@@ -564,6 +592,8 @@ struct  _EspHostedConfigPayload
     EspHostedRespOTAWrite *resp_ota_write;
     EspHostedCmdOTAEnd *cmd_ota_end;
     EspHostedRespOTAEnd *resp_ota_end;
+    EspHostedCmdHB *cmd_hb;
+    EspHostedRespHB *resp_hb;
   };
 };
 #define ESP_HOSTED_CONFIG_PAYLOAD__INIT \
@@ -1141,6 +1171,44 @@ EspHostedRespOTAEnd *
 void   esp_hosted_resp_otaend__free_unpacked
                      (EspHostedRespOTAEnd *message,
                       ProtobufCAllocator *allocator);
+/* EspHostedCmdHB methods */
+void   esp_hosted_cmd_hb__init
+                     (EspHostedCmdHB         *message);
+size_t esp_hosted_cmd_hb__get_packed_size
+                     (const EspHostedCmdHB   *message);
+size_t esp_hosted_cmd_hb__pack
+                     (const EspHostedCmdHB   *message,
+                      uint8_t             *out);
+size_t esp_hosted_cmd_hb__pack_to_buffer
+                     (const EspHostedCmdHB   *message,
+                      ProtobufCBuffer     *buffer);
+EspHostedCmdHB *
+       esp_hosted_cmd_hb__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   esp_hosted_cmd_hb__free_unpacked
+                     (EspHostedCmdHB *message,
+                      ProtobufCAllocator *allocator);
+/* EspHostedRespHB methods */
+void   esp_hosted_resp_hb__init
+                     (EspHostedRespHB         *message);
+size_t esp_hosted_resp_hb__get_packed_size
+                     (const EspHostedRespHB   *message);
+size_t esp_hosted_resp_hb__pack
+                     (const EspHostedRespHB   *message,
+                      uint8_t             *out);
+size_t esp_hosted_resp_hb__pack_to_buffer
+                     (const EspHostedRespHB   *message,
+                      ProtobufCBuffer     *buffer);
+EspHostedRespHB *
+       esp_hosted_resp_hb__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   esp_hosted_resp_hb__free_unpacked
+                     (EspHostedRespHB *message,
+                      ProtobufCAllocator *allocator);
 /* EspHostedConfigPayload methods */
 void   esp_hosted_config_payload__init
                      (EspHostedConfigPayload         *message);
@@ -1252,6 +1320,12 @@ typedef void (*EspHostedCmdOTAEnd_Closure)
 typedef void (*EspHostedRespOTAEnd_Closure)
                  (const EspHostedRespOTAEnd *message,
                   void *closure_data);
+typedef void (*EspHostedCmdHB_Closure)
+                 (const EspHostedCmdHB *message,
+                  void *closure_data);
+typedef void (*EspHostedRespHB_Closure)
+                 (const EspHostedRespHB *message,
+                  void *closure_data);
 typedef void (*EspHostedConfigPayload_Closure)
                  (const EspHostedConfigPayload *message,
                   void *closure_data);
@@ -1294,6 +1368,8 @@ extern const ProtobufCMessageDescriptor esp_hosted_cmd_otawrite__descriptor;
 extern const ProtobufCMessageDescriptor esp_hosted_resp_otawrite__descriptor;
 extern const ProtobufCMessageDescriptor esp_hosted_cmd_otaend__descriptor;
 extern const ProtobufCMessageDescriptor esp_hosted_resp_otaend__descriptor;
+extern const ProtobufCMessageDescriptor esp_hosted_cmd_hb__descriptor;
+extern const ProtobufCMessageDescriptor esp_hosted_resp_hb__descriptor;
 extern const ProtobufCMessageDescriptor esp_hosted_config_payload__descriptor;
 
 PROTOBUF_C__END_DECLS

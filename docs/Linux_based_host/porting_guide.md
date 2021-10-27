@@ -93,6 +93,14 @@ make CROSS_COMPILE=/home/user1/arm64_toolchain/bin/aarch64-linux-gnu-
 	* SPI Bus instance and Chip select number
 		- Default value for both is 0, _i.e._ SPI0 and chip select 0.
 		- It could be changed using variables, `esp_board.bus_num` and `esp_board.chip_select` in function `spi_dev_init()` from file `host/linux/host_driver/esp32/spi/esp_spi.c`
+
+##### 1.2.5 Userspace application
+* Heartbeat application uses Raspberry Pi specific libraries to implement `reset_esp32` method.
+  * C demo application
+    - `pigpiod` is used to implement `reset_esp32()` in this application. Board specific library and gpio based functions should be used in this case.
+  * Python demo application
+    - `RPi.GPIO` python module is used for using gpio specific userspace functionality. `reset_esp32()` should be replaced with board supported library.
+    
 ### 1.3 Additional information
 This is list of bug where developers have given their inputs. These are not tested/endorsed but are for informational purpose only.
 - [Issue#23](https://github.com/espressif/esp-hosted/issues/23)

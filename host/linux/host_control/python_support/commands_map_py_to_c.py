@@ -81,3 +81,6 @@ esp_ota_write.restype = c_int
 
 esp_ota_end = commands_lib.esp_ota_end
 esp_ota_end.restype = c_int
+
+esp_hb = commands_lib.esp_hb
+esp_hb.restype = c_int

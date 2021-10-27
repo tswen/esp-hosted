@@ -51,7 +51,7 @@ sudo ifconfig ethap0 192.168.4.5
 | scan | Scan external access points |
 | sta_list | List external stations connected to softAP |
 
- Run `make stress` in [c_support](../host/linux/host_control/c_support) directory to compile `stress.c`.
+Run `make stress` in [c_support](../host/linux/host_control/c_support) directory to compile `stress.c`.
 
 Note:-
 Please execute `stress.out` as below.
@@ -59,4 +59,24 @@ Please execute `stress.out` as below.
 ```
 ex.
 sudo ./stress.out 1 sta_connect sta_disconnect ap_start ap_stop scan sta_list
+```
+
+# Heartbeat Application
+
+[heartbeat.c](../host/linux/host_control/c_support/heartbeat.c) used for monitoring liveliness of ESP32. It sends a sequential number as heartbeat and expects a heartbeat reponse within `TIMEOUT_PSERIAL_RESP_HB` time. ESP32 maintains own sequential number in reference to the heartbeat requests received. In case the ESP32 is rebooted, it starts sequence number of `0`. This is used to understand if ESP32 is silently rebooted. Heartbeat is sent in loop after every `ESP_HB_INTERVAL_SEC` interval. In case heartbeat is missed, this interval is reduced to `ESP_HB_RETRY_INTERVAL_SEC` and retried for `HB_MAX_RETRY` times. In case the heartbeats response not received after all retries, this application assumes that ESP32 is stuck in processing and resets ESP32 using `EN` or `RST` physical pin
+
+Run `make heartbeat` in [c_support](../host/linux/host_control/c_support) directory to compile `heartbeat.c`.
+
+## Parameters
+- `esp_reset_gpio_pin_num`:
+This is optional parameter and defaults to `6` in Raspberry Pi case. This pin number when passed, the application will use that to reset ESP32.
+
+To execute this process,
+```
+sudo ./heartbeat.out 6
+```
+or
+
+```
+sudo ./heartbeat.out
 ```
